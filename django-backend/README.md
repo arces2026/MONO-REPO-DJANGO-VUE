@@ -268,10 +268,10 @@ docker-compose up -d --build
 
 ```bash
 # Connettiti al database tramite terminale
-docker exec -it mariadb mysql -u root -p
-# Inserisci la password: sciamano
+docker exec -it mariadb mariadb -u root -p
+# Inserisci la tua password: ********
 
-# Una volta dentro MySQL:
+# Una volta dentro mariadb:
 USE vue_django;
 SHOW TABLES;
 SELECT * FROM auth_user;
@@ -283,17 +283,17 @@ SELECT * FROM catalog_autore;
 
 ```bash
 # Crea un backup del database
-docker exec mariadb mysqldump -u root -psciamano vue_django > backup_$(date +%Y%m%d).sql
+docker exec mariadb mysqldump -u root -p[your-password] vue_django > backup_$(date +%Y%m%d).sql
 
 # Backup di tutti i database
-docker exec mariadb mysqldump -u root -psciamano --all-databases > backup_full.sql
+docker exec mariadb mysqldump -u root -p[your-password] --all-databases > backup_full.sql
 ```
 
 ### Ripristino del Database
 
 ```bash
 # Ripristina da backup
-cat backup.sql | docker exec -i mariadb mysql -u root -psciamano vue_django
+cat backup.sql | docker exec -i mariadb mariadb -u root -p[your-password] vue_django
 ```
 
 ### Migrazioni del Database
