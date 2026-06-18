@@ -4,10 +4,10 @@ Questa è la documentazione principale per il progetto che combina un frontend *
 
 ## 📋 Indice
 
-* [Struttura del Progetto](https://www.google.com/search?q=%23-struttura-del-progetto)
-* [Installazione e Avvio](https://www.google.com/search?q=%23-installazione-e-avvio)
-* [Comandi Docker Utili](https://www.google.com/search?q=%23-comandi-docker-utili)
-* [Debug e Troubleshooting](https://www.google.com/search?q=%23-debug-e-troubleshooting)
+* [Struttura del Progetto](#-struttura-del-progetto)
+* [Installazione e Avvio](#-installazione-e-avvio-con-docker)
+* [Comandi Docker Utili](#comandi-docker-utili)
+* [Debug e Troubleshooting](#-debug-e-troubleshooting)
 
 ---
 
@@ -22,39 +22,153 @@ VUE-DJANGO-FOLDER/
 
 ```
 
----
+[↑ torna su](#-indice)
 
-## 🐳 Installazione e Avvio
+## 🐳 Installazione e Avvio con Docker
 
-### 1. Configurazione
-
-Assicurati di avere un file `.env` nella cartella radice (come descritto nel setup del backend).
-
-### 2. Avvio (Modalità Background)
-
-Per avviare l'intero stack (Backend + Frontend + DB):
+### 1. Clona il Repository
 
 ```bash
-docker-compose up -d --build
-
+git clone <url-del-repository>
+cd MONO-REPO-DJANGO-VUE
 ```
 
-* **Backend**: http://localhost:8000
-* **Frontend**: http://localhost:8080 (o la porta definita nel compose)
+### 2. Configura le Variabili d'Ambiente
+
+Crea un file `.env` nella **root del progetto** (dove si trova `docker-compose.yml`):
+
+```bash
+# .env
+# Configurazione Database
+DB_HOST=db
+DB_PORT=3306
+DB_NAME=vue_django
+DB_USER=root
+DB_PASSWORD=********
+
+# Configurazione MariaDB
+MARIADB_ROOT_PASSWORD=********
+```
+
+> **⚠️ IMPORTANTE**: Sostituisci `********` con una password sicura per l'ambiente di produzione. Il file `.env` NON deve essere committato nel repository (aggiungilo al `.gitignore`).
+
+### 3. Costruisci e Avvia i Container
+
+```bash
+# Costruisci le immagini e avvia i container in background
+docker-compose up -d --build
+
+# Verifica che i container siano in esecuzione
+docker ps
+```
+
+Dovresti vedere tre container attivi:
+
+- `django-backend` - Django application (porta 8000)
+- `mariadb` - Database MariaDB (porta 3306)
+- `vue-frontend` - Vue application (porta 8080)
+
+### 4. Applica le Migrazioni del Database
+
+```bash
+# Applica le migrazioni per creare le tabelle nel database
+docker exec -it django-backend python manage.py migrate
+```
+
+### 5. Crea un Superutente (Admin)
+
+```bash
+# Crea un account amministratore per l'admin panel
+docker exec -it django-backend python manage.py createsuperuser
+```
+
+Segui le istruzioni per inserire:
+- **Username**: `admin` (o quello che preferisci)
+- **Email**: `admin@example.com`
+- **Password**: `admin123` (o una password sicura)
+
+### 6. Verifica che tutto funzioni
+
+Apri il browser e visita:
+- **Vue Home**: http://localhost:8080
+- **Admin Panel**: http://localhost:8000/admin/
+- **API Books**: http://localhost:8000/api/libri/
+- **API Authors**: http://localhost:8000/api/autori/
+- **Register**: http://localhost:8000/api/register/
 
 ---
+[↑ torna su](#-indice)
+<a id='comandi-docker-utili'><a>
 
 ## 🛠️ Comandi Docker Utili
 
-| Azione | Comando |
-| --- | --- |
-| **Avvia tutto** | `docker-compose up -d` |
-| **Ricostruisci tutto** | `docker-compose up -d --build` |
-| **Ferma tutto** | `docker-compose down` |
-| **Riavvia un servizio** | `docker-compose restart [backend |
-| **Log in tempo reale** | `docker-compose logs -f [servizio]` |
+### Gestione dei Container
 
----
+```bash
+# Visualizza i container in esecuzione
+docker ps
+
+# Visualizza tutti i container (anche fermati)
+docker ps -a
+
+# Ferma i container (senza rimuoverli)
+docker-compose stop
+
+# Avvia i container fermati
+docker-compose start
+
+# Riavvia i container
+docker-compose restart
+
+# Ferma e rimuove i container (i volumi persistono)
+docker-compose down
+
+# Ferma, rimuove container e volumi (PERDE I DATI!)
+docker-compose down -v
+```
+
+### Visualizzazione dei Log
+
+```bash
+# Visualizza i log del backend (in tempo reale)
+docker logs -f django-backend
+
+# Visualizza i log del database
+docker logs -f mariadb
+
+# Visualizza gli ultimi 100 log del backend
+docker logs --tail 100 django-backend
+```
+
+### Comandi Django
+
+```bash
+# Entra nella shell del container
+docker exec -it django-backend /bin/bash
+
+# Esegui comandi Django senza entrare nel container
+docker exec -it django-backend python manage.py <comando>
+
+# Esempi:
+docker exec -it django-backend python manage.py makemigrations
+docker exec -it django-backend python manage.py migrate
+docker exec -it django-backend python manage.py createsuperuser
+docker exec -it django-backend python manage.py shell
+```
+
+### Riavvio dopo Modifiche al Codice
+
+Il container è configurato con **hot-reload** grazie al volume montato (`./django-backend:/app`). Le modifiche al codice vengono rilevate automaticamente, ma in caso di problemi:
+
+```bash
+# Riavvia solo il backend
+docker-compose restart web
+
+# Oppure ricostruisci tutto
+docker-compose up -d --build
+```
+
+[↑ Torna su](#-indice)
 
 ## 🔍 Debug e Troubleshooting
 
@@ -79,5 +193,4 @@ Se hai bisogno di eseguire comandi all'interno dei container per debuggare:
 * **CORS**: Se il frontend non comunica col backend, verifica in `django-backend/bookshelf/settings.py` che `CORS_ALLOWED_ORIGINS` includa l'URL del frontend.
 
 ---
-
-**Suggerimento**: Ricorda di mantenere il file `README.md` nel `django-backend/` come documentazione specifica per le API e i test di backend, mentre questo file (`/README.md`) deve servire come "entry point" per l'intero progetto.
+[↑ Torna su](#-indice)

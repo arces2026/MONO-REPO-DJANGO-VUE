@@ -54,6 +54,7 @@ services:
 
   frontend:
       build: ./vue-frontend
+      container_name: vue-frontend
       ports:
         - "8080:80"  # Mappa la porta 8080 del tuo PC alla porta 80 del container Nginx
       depends_on:
