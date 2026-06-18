@@ -1,0 +1,35 @@
+# Cartelle di versionamento
+.git
+.gitignore
+
+# Ambienti virtuali Python
+.venv
+venv
+env
+ENV
+
+# Cache e compilazione Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Dipendenze Node.js (fondamentale per Vue!)
+node_modules
+npm-debug.log
+
+# Risultati della build di Vue
+dist
+.output
+
+# Database locali
+db.sqlite3
+*.db
+
+# Variabili d'ambiente (non copiare il file locale, crea uno specifico per il container se necessario)
+.env
+
+# Editor e OS
+.vscode
+.idea
+.DS_Store

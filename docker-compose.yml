@@ -1,0 +1,68 @@
+# Definisce l'elenco dei servizi (container) da eseguire
+services:
+
+  # Definisce il servizio per l'applicazione web (backend)
+  backend:
+    # Specifica la directory che contiene il Dockerfile per costruire l'immagine
+    build:
+      context: ./django-backend
+
+    # Assegna un nome personalizzato al container creato
+    container_name: django-backend
+
+    # Comanda il comando che deve essere eseguito all'avvio del container
+    command: ./wait-for-it.sh db:3306 -- python manage.py runserver 0.0.0.0:8000
+
+    # Mappa le directory locali nel container per mantenere il codice sincronizzato (hot-reload)
+    volumes:
+      - ./django-backend:/app
+
+    # Mappa la porta 8000 del container sulla porta 8000 della macchina host
+    ports:
+      - "8000:8000"
+
+    # Carica le variabili d'ambiente da un file .env specifico
+    env_file:
+      - .env
+
+    # Assicura che il servizio 'db' venga avviato prima del 'web'
+    depends_on:
+      - db
+
+  # Definisce il servizio per il database MariaDB
+  db:
+    # Usa l'immagine ufficiale di MariaDB versione 11
+    image: mariadb:11
+
+    # Assegna un nome personalizzato al container del database
+    container_name: mariadb
+
+    # Configura il container per riavviarsi automaticamente in caso di crash o stop
+    restart: always
+
+    # Carica le variabili d'ambiente (es. password del database) da un file .env
+    env_file:
+      - .env
+
+    # Monta un volume persistente per salvare i dati del database anche se il container viene rimosso
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+    # Mappa la porta 3306 del container sulla porta 3306 della macchina host
+    ports:
+      - "3306:3306"
+
+  frontend:
+      build: ./vue-frontend
+      ports:
+        - "8080:80"  # Mappa la porta 8080 del tuo PC alla porta 80 del container Nginx
+      depends_on:
+        - backend
+
+# Definisce i volumi utilizzati per la persistenza dei dati a livello globale
+volumes:
+  # Crea un volume nominato per i dati di MariaDB
+  mariadb_data:
+
+
+  
