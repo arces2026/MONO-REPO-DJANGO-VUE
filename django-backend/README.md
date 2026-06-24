@@ -151,6 +151,10 @@ docker exec mariadb mysqldump -u root -p[your-password] --all-databases > backup
 ### Ripristino del Database
 
 ```bash
+# Se non esiste ancora, creare il db
+docker exec -it mariadb mariadb -u root -p
+# inserire la password ed entrare nella shell di mariadb
+CREATE DATABASE vue_django;
 # Ripristina da backup
 cat [nome_file].sql | docker exec -i mariadb mariadb -u root -p[your-password] vue_django
 ```

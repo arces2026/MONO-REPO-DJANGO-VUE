@@ -11,7 +11,7 @@ services:
     container_name: django-backend
 
     # Comanda il comando che deve essere eseguito all'avvio del container
-    command: ./wait-for-it.sh db:3306 -- python manage.py runserver 0.0.0.0:8000
+    command: ./wait-for-it.sh db:3306 -t 30 -- python manage.py runserver 0.0.0.0:8000
 
     # Mappa le directory locali nel container per mantenere il codice sincronizzato (hot-reload)
     volumes:
@@ -47,10 +47,11 @@ services:
     # Monta un volume persistente per salvare i dati del database anche se il container viene rimosso
     volumes:
       - mariadb_data:/var/lib/mysql
+      - ./django-backend/init.sql:/docker-entrypoint-initdb.d/init.sql
 
     # Mappa la porta 3306 del container sulla porta 3306 della macchina host
     ports:
-      - "3306:3306"
+      - "3307:3306"
 
   frontend:
       build: ./vue-frontend
@@ -64,6 +65,3 @@ services:
 volumes:
   # Crea un volume nominato per i dati di MariaDB
   mariadb_data:
-
-
-  
